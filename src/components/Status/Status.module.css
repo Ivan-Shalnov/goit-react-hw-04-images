@@ -1,0 +1,12 @@
+.status {
+  margin: 0 auto;
+  width: max-content;
+}
+.error {
+  composes: status;
+  color: red;
+}
+.warning {
+  composes: status;
+  color: black;
+}
