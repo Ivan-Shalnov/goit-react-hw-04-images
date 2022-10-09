@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
-const BASE_URL = 'https://pixabay.com/api';
+const BASE_URL = 'https://pixabay.com/api/';
 const KEY = '29531831-dbf8f491323bf6a8b4e4c4edd';
 const PER_PAGE = 12;
 export async function fetchImages({ query, page }) {
