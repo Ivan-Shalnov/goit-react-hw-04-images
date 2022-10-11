@@ -24,19 +24,12 @@ class App extends React.Component {
       this.setState({ loading: true, error: null });
       try {
         const data = await api.fetchImages({ query, page: this.state.page });
-        if (prevState.query !== query) {
-          this.setState({
-            images: data.images,
+        this.setState(prevState => {
+          return {
+            images: [...prevState.images, ...data.images],
             canLoadMore: data.canLoadMore,
-          });
-        } else {
-          this.setState(prevState => {
-            return {
-              images: [...prevState.images, ...data.images],
-              canLoadMore: data.canLoadMore,
-            };
-          });
-        }
+          };
+        });
       } catch ({ message }) {
         this.setState({ error: message });
       } finally {
@@ -45,7 +38,9 @@ class App extends React.Component {
     }
   }
   onSubmit = query => {
-    this.setState({ query, page: 1 });
+    if (this.state.query !== query) {
+      this.setState({ query, page: 1, images: [] });
+    }
   };
   loadMore = () => {
     this.setState(prevState => ({
