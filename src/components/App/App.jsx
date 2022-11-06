@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import css from './App.module.css';
 import Searchbar from '../Searchbar/Searchbar';
 import Loader from 'components/Loader/Loader';
@@ -6,74 +6,60 @@ import * as api from '../../api/pixaBay';
 import ImageGallery from 'components/ImageGallery/ImageGallery';
 import Button from 'components/Button/Button';
 import Status from 'components/Status/Status';
-class App extends React.Component {
-  state = {
-    query: '',
-    page: 1,
-    images: [],
-    loading: false,
-    canLoadMore: false,
-    error: null,
-  };
-  async componentDidUpdate(_, prevState) {
-    const { query, page } = this.state;
-    if (
-      (prevState.query !== query || prevState.page !== page) &&
-      query !== ''
-    ) {
-      this.setState({ loading: true, error: null });
+const App = () => {
+  const [query, setQuery] = useState('');
+  const [page, setPage] = useState(1);
+  const [images, setImages] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [canLoadMore, setCanLoadMore] = useState(false);
+  const [error, setError] = useState(null);
+  useEffect(() => {
+    (async () => {
+      if (query === '') return;
+      setLoading(true);
+      setError(null);
       try {
-        const data = await api.fetchImages({ query, page: this.state.page });
-        this.setState(prevState => {
-          return {
-            images: [...prevState.images, ...data.images],
-            canLoadMore: data.canLoadMore,
-          };
-        });
+        const data = await api.fetchImages({ query, page });
+        setImages(prevImages => [...prevImages, ...data.images]);
+        setCanLoadMore(data.canLoadMore);
       } catch ({ message }) {
-        this.setState({ error: message });
+        setError(message);
       } finally {
-        this.setState({ loading: false });
+        setLoading(false);
       }
-    }
-  }
-  onSubmit = query => {
-    if (this.state.query !== query) {
-      this.setState({ query, page: 1, images: [] });
-    }
+    })();
+  }, [query, page]);
+  const onSubmit = newQuery => {
+    if (query.trim().toLowerCase() === newQuery.trim().toLowerCase()) return;
+    setQuery(newQuery.trim());
+    setPage(1);
+    setImages([]);
   };
-  loadMore = () => {
-    this.setState(prevState => ({
-      page: prevState.page + 1,
-    }));
-  };
-  render() {
-    const { onSubmit, loadMore } = this;
-    const { images, canLoadMore, loading, error, query } = this.state;
-    return (
-      <div className={css.App}>
-        <Searchbar onSubmit={onSubmit} disableBtn={loading} />
-        {(() => {
-          if (error) {
-            return <Status type="error" message={error} />;
-          } else if (!query) {
-            return <Status message={'Type something'} />;
-          } else if (images.length === 0 && !loading) {
-            return <Status type="warning" message={'Oops...Nothing found'} />;
-          } else if (images.length > 0) {
-            return (
-              <>
-                <ImageGallery images={images} />
-                <Loader visible={loading} />
-                {canLoadMore && (
-                  <Button loadMoreHandler={loadMore} disabled={loading} />
-                )}
-              </>
-            );
-          }
-        })()}
-      </div>
-    );
-  }
-}
+  const loadMore = () => setPage(prev => prev + 1);
+
+  return (
+    <div className={css.App}>
+      <Searchbar onSubmit={onSubmit} disableBtn={loading} />
+      {(() => {
+        if (error) {
+          return <Status type="error" message={error} />;
+        } else if (!query) {
+          return <Status message={'Type something'} />;
+        } else if (images.length === 0 && !loading) {
+          return <Status type="warning" message={'Oops...Nothing found'} />;
+        } else if (images.length > 0) {
+          return (
+            <>
+              <ImageGallery images={images} />
+              <Loader visible={loading} />
+              {canLoadMore && (
+                <Button loadMoreHandler={loadMore} disabled={loading} />
+              )}
+            </>
+          );
+        }
+      })()}
+    </div>
+  );
+};
 export default App;
