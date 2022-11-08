@@ -4,18 +4,18 @@ import { useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import css from './Modal.module.css';
 const Modal = ({ src, alt, closeModal }) => {
-  const closeFromKeyboard = event => {
-    if (event.key === 'Escape') closeModal();
-  };
   const closeOnOverlayClick = event => {
     if (event.target === event.currentTarget) closeModal();
   };
   useEffect(() => {
+    const closeFromKeyboard = event => {
+      if (event.key === 'Escape') closeModal();
+    };
     window.addEventListener('keydown', closeFromKeyboard);
     return () => {
       window.removeEventListener('keydown', closeFromKeyboard);
     };
-  }, []);
+  }, [closeModal]);
   return createPortal(
     <div className={css.Overlay} onClick={closeOnOverlayClick}>
       <div className={css.Modal}>
